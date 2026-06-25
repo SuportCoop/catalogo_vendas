@@ -1,0 +1,163 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Painel Administrativo | Dashboard Financeiro{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Painel Administrativo</h1>
+            <p style="color: var(--text-muted);">Métricas financeiras em tempo real e controle de pedidos.</p>
+        </div>
+        <div style="font-size: 0.9rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <i class="fa-regular fa-calendar" style="color: var(--warning); margin-right: 0.3rem;"></i> Data: <b>{{ today|date:"d/m/Y" }}</b>
+        </div>
+    </div>
+
+    <!-- Seção de Métricas Financeiras -->
+    <div class="metrics-grid">
+        <!-- Vendas no Dia -->
+        <div class="metric-card success">
+            <span class="metric-label">Vendas no Dia</span>
+            <div class="metric-value">R$ {{ sales_today|default:"0,00" }}</div>
+            <span class="metric-sub">Compras com status finalizado hoje</span>
+        </div>
+        
+        <!-- Vendas no Mês -->
+        <div class="metric-card success">
+            <span class="metric-label">Vendas no Mês</span>
+            <div class="metric-value">R$ {{ sales_month|default:"0,00" }}</div>
+            <span class="metric-sub">Acumulado do mês corrente</span>
+        </div>
+
+        <!-- Produtos Vendidos -->
+        <div class="metric-card">
+            <span class="metric-label">Produtos Vendidos</span>
+            <div class="metric-value">{{ total_qty_sold|default:"0" }} un.</div>
+            <span class="metric-sub">Volume total de vendas concretizadas</span>
+        </div>
+
+        <!-- Maior Produto Vendido -->
+        <div class="metric-card warning">
+            <span class="metric-label">Maior Produto Vendido</span>
+            <div class="metric-value" style="font-size: 1.3rem; margin-top: 0.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {% if top_selling %}
+                    {{ top_selling.product__name }}
+                {% else %}
+                    Nenhum
+                {% endif %}
+            </div>
+            <span class="metric-sub">
+                {% if top_selling %}
+                    {{ top_selling.total_sold }} unidades vendidas
+                {% else %}
+                    Sem vendas ainda
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Melhor Cliente -->
+        <div class="metric-card danger">
+            <span class="metric-label">Melhor Cliente</span>
+            <div class="metric-value" style="font-size: 1.3rem; margin-top: 0.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {% if top_client %}
+                    {{ top_client.client__name }}
+                {% else %}
+                    Nenhum
+                {% endif %}
+            </div>
+            <span class="metric-sub">
+                {% if top_client %}
+                    Total comprado: R$ {{ top_client.total_spent }}
+                {% else %}
+                    Sem compras ainda
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Seção de Gerenciamento de Pedidos -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 style="font-family: var(--font-title); font-size: 1.4rem;">Gerenciamento de Vendas / Pedidos</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Confirme ou cancele pedidos para atualizar o histórico de compras do cliente e os relatórios financeiros.</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nº Compra</th>
+                        <th>Cliente</th>
+                        <th>Data / Hora</th>
+                        <th>Produtos Adquiridos</th>
+                        <th>Total Geral</th>
+                        <th>Status Atual</th>
+                        <th style="width: 250px;">Ações / Liberar Compra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                        <tr>
+                            <td style="font-weight: bold;">#{{ purchase.id }}</td>
+                            <td>
+                                <div><b>{{ purchase.client.name }}</b></div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ purchase.client.contact }}</div>
+                            </td>
+                            <td>{{ purchase.date|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    {% for item in purchase.items.all %}
+                                        <li style="font-size: 0.85rem; color: var(--text-muted);">
+                                            {{ item.quantity }}x {{ item.product.name }} <span style="font-size: 0.75rem;">(R$ {{ item.price }})</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td style="font-weight: bold; color: var(--success);">R$ {{ purchase.total_value }}</td>
+                            <td>
+                                {% if purchase.status == 'Pendente' %}
+                                    <span class="badge badge-pending">Pendente</span>
+                                {% elif purchase.status == 'Finalizada' %}
+                                    <span class="badge badge-success">Finalizada</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if purchase.status == 'Finalizada' and not request.user.is_superuser %}
+                                    <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                        <select name="status" class="form-select" disabled style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; opacity: 0.6; cursor: not-allowed;">
+                                            <option value="Finalizada" selected>Finalizada</option>
+                                        </select>
+                                        <span class="btn btn-sm" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: not-allowed;" title="Bloqueado - Apenas Administrador Geral pode reverter">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <form method="POST" action="{% url 'update_purchase_status' purchase.id %}" style="display: flex; gap: 0.4rem;">
+                                        {% csrf_token %}
+                                        <select name="status" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto;">
+                                            <option value="Pendente" {% if purchase.status == 'Pendente' %}selected{% endif %}>Pendente</option>
+                                            <option value="Finalizada" {% if purchase.status == 'Finalizada' %}selected{% endif %}>Finalizada</option>
+                                            <option value="Cancelada" {% if purchase.status == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Atualizar Status">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                                <i class="fa-solid fa-receipt" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
+                                <h4>Nenhuma compra registrada no sistema</h4>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

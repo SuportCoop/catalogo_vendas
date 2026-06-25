@@ -1,0 +1,84 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Controle de Acessos e Usuários | Painel Adm{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Controle de Usuários e Acessos</h1>
+            <p style="color: var(--text-muted);">Crie novos usuários do sistema e defina quem tem acesso administrativo (staff) ao Painel de Controle.</p>
+        </div>
+        <a href="{% url 'admin_user_create' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-user-shield"></i> Novo Usuário
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nome de Usuário</th>
+                        <th>Endereço de E-mail</th>
+                        <th>Último Login</th>
+                        <th>Acesso Administrativo (Staff)</th>
+                        <th style="width: 250px; text-align: center;">Alterar Nível de Acesso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td style="font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-regular fa-user" style="color: var(--text-muted);"></i>
+                                {{ user.username }}
+                                {% if user.is_superuser %}
+                                    <span class="badge badge-success" style="font-size: 0.65rem; background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: rgba(59, 130, 246, 0.4);">Superusuário</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.email|default:"-" }}</td>
+                            <td>
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">Nunca logou</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_staff %}
+                                    <span class="badge badge-success" style="font-size: 0.7rem;">Sim (Admin)</span>
+                                {% else %}
+                                    <span class="badge badge-pending" style="font-size: 0.7rem; background: rgba(100, 116, 139, 0.15); color: var(--text-muted); border-color: rgba(100, 116, 139, 0.3);">Não (Cliente)</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: center;">
+                                {% if user.is_superuser %}
+                                    <button class="btn btn-sm" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">
+                                        Acesso Total (Bloqueado)
+                                    </button>
+                                {% elif user == request.user %}
+                                    <button class="btn btn-sm btn-danger" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">
+                                        Seu Próprio Perfil
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'admin_user_toggle_staff' user.id %}" class="btn btn-sm {% if user.is_staff %}btn-danger{% else %}btn-primary{% endif %}" style="width: 100%;">
+                                        {% if user.is_staff %}
+                                            <i class="fa-solid fa-user-minus"></i> Revogar Permissão
+                                        {% else %}
+                                            <i class="fa-solid fa-user-plus"></i> Conceder Permissão Adm
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                                <h4>Nenhum usuário cadastrado</h4>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

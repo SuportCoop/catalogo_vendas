@@ -1,0 +1,94 @@
+{% extends 'catalogo/base.html' %}
+
+{% block title %}Criar uma Conta{% endblock %}
+
+{% block content %}
+    <div style="max-width: 600px; margin: 3rem auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg);">
+        <h2 style="font-family: var(--font-title); font-size: 1.8rem; margin-bottom: 0.5rem; text-align: center;">Crie sua Conta</h2>
+        <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem; margin-bottom: 2rem;">Cadastre-se para acompanhar seus pedidos e salvar seus dados.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <h3 style="font-family: var(--font-title); font-size: 1.15rem; margin-bottom: 1rem; color: var(--accent);">1. Credenciais de Acesso</h3>
+            
+            <div class="form-group">
+                <label for="{{ user_form.username.id_for_label }}">Nome de Usuário *</label>
+                {{ user_form.username }}
+                {% if user_form.username.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ user_form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ user_form.email.id_for_label }}">E-mail</label>
+                {{ user_form.email }}
+                {% if user_form.email.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ user_form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ user_form.password.id_for_label }}">Senha *</label>
+                {{ user_form.password }}
+                {% if user_form.password.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ user_form.password.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+            
+            <h3 style="font-family: var(--font-title); font-size: 1.15rem; margin-bottom: 1rem; color: var(--accent);">2. Detalhes Pessoais e de Entrega</h3>
+            
+            <div class="form-group">
+                <label for="{{ client_form.name.id_for_label }}">Nome Completo *</label>
+                {{ client_form.name }}
+                {% if client_form.name.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ client_form.name.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ client_form.cpf_cnpj.id_for_label }}">CPF ou CNPJ (Opcional)</label>
+                {{ client_form.cpf_cnpj }}
+                {% if client_form.cpf_cnpj.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ client_form.cpf_cnpj.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ client_form.birthday.id_for_label }}">Data de Aniversário</label>
+                {{ client_form.birthday }}
+                {% if client_form.birthday.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ client_form.birthday.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ client_form.contact.id_for_label }}">Contato (WhatsApp/Celular) *</label>
+                {{ client_form.contact }}
+                {% if client_form.contact.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ client_form.contact.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ client_form.address.id_for_label }}">Endereço Completo de Entrega (Opcional)</label>
+                {{ client_form.address }}
+                {% if client_form.address.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ client_form.address.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem; margin-top: 1.5rem; font-size: 1rem;">
+                Criar Minha Conta
+            </button>
+        </form>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+        
+        <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+            Já tem uma conta? <a href="{% url 'login' %}" style="color: var(--accent); font-weight: 600;">Faça login aqui</a>
+        </p>
+    </div>
+{% endblock %}

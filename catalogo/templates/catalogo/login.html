@@ -1,0 +1,34 @@
+{% extends 'catalogo/base.html' %}
+
+{% block title %}Entrar na sua Conta{% endblock %}
+
+{% block content %}
+    <div style="max-width: 450px; margin: 4rem auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg);">
+        <h2 style="font-family: var(--font-title); font-size: 1.8rem; margin-bottom: 0.5rem; text-align: center;">Bem-vindo de Volta</h2>
+        <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem; margin-bottom: 2rem;">Entre para visualizar seu histórico e agilizar suas compras.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username">Nome de Usuário</label>
+                <input type="text" name="username" autofocus maxlength="150" required id="id_username" class="form-control" placeholder="Digite seu usuário">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">Senha</label>
+                <input type="password" name="password" required id="id_password" class="form-control" placeholder="Digite sua senha">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; margin-top: 1rem;">
+                Entrar
+            </button>
+        </form>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+        
+        <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+            Não tem uma conta ainda? <a href="{% url 'register' %}" style="color: var(--accent); font-weight: 600;">Cadastre-se aqui</a>
+        </p>
+    </div>
+{% endblock %}

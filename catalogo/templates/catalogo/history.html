@@ -1,0 +1,59 @@
+{% extends 'catalogo/base.html' %}
+
+{% block title %}Meu Histórico de Compras{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; font-family: var(--font-title);">Meu Histórico de Compras</h1>
+
+    <div class="cart-section">
+        {% if purchases %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nº Pedido</th>
+                            <th>Data</th>
+                            <th>Produtos</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for purchase in purchases %}
+                            <tr>
+                                <td style="font-weight: bold;">#{{ purchase.id }}</td>
+                                <td>{{ purchase.date|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <ul style="list-style: none; padding-left: 0;">
+                                        {% for item in purchase.items.all %}
+                                            <li style="font-size: 0.9rem; margin-bottom: 0.2rem;">
+                                                {{ item.quantity }}x {{ item.product.name }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td style="font-weight: 700; color: var(--accent);">R$ {{ purchase.total_value }}</td>
+                                <td>
+                                    {% if purchase.status == 'Pendente' %}
+                                        <span class="badge badge-pending">Pendente</span>
+                                    {% elif purchase.status == 'Finalizada' %}
+                                        <span class="badge badge-success">Finalizada</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Cancelada</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem 1rem;">
+                <i class="fa-solid fa-clock" style="font-size: 3rem; color: var(--border); margin-bottom: 1rem;"></i>
+                <h3>Você ainda não fez nenhum pedido</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Quando você realizar compras, elas aparecerão listadas aqui.</p>
+                <a href="{% url 'catalog' %}" class="btn btn-primary">Ir para o Catálogo</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

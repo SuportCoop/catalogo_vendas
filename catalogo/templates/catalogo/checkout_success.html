@@ -1,0 +1,46 @@
+{% extends 'catalogo/base.html' %}
+
+{% block title %}Pedido Recebido com Sucesso!{% endblock %}
+
+{% block content %}
+    <div style="max-width: 700px; margin: 3rem auto; text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 3rem; box-shadow: var(--shadow-lg);">
+        <i class="fa-solid fa-circle-check" style="font-size: 5rem; color: var(--success); margin-bottom: 1.5rem; display: block;"></i>
+        
+        <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.5rem;">Pedido Recebido!</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">Seu pedido <b>#{{ purchase.id }}</b> foi registrado no nosso sistema com o status <b>Pendente</b>.</p>
+        
+        <div style="background: rgba(16, 185, 129, 0.06); border: 1px dashed var(--success); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; text-align: left;">
+            <h3 style="font-family: var(--font-title); font-size: 1.2rem; color: var(--success); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-brands fa-pix"></i> Instruções de Pagamento (PIX)
+            </h3>
+            <p style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-main);">Por favor, realize a transferência PIX no valor de:</p>
+            <div style="font-size: 2rem; font-weight: 800; font-family: var(--font-title); color: var(--text-main); margin-bottom: 1rem;">
+                R$ {{ purchase.total_value }}
+            </div>
+            <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-muted);">Chave Celular PIX:</p>
+            <div style="font-size: 1.3rem; font-weight: bold; background: var(--bg-hover); padding: 0.5rem 1rem; border-radius: var(--radius-sm); width: fit-content; margin-bottom: 1rem; border: 1px solid var(--border);">
+                {{ pix_key }}
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: block;">Após fazer a transferência, clique no botão abaixo para nos enviar o resumo do pedido e o comprovante pelo WhatsApp. O status do seu pedido será atualizado em seu histórico após confirmarmos o pagamento.</span>
+        </div>
+
+        <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-primary" style="padding: 1.1rem 2rem; font-size: 1.15rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.6rem;">
+            <i class="fa-brands fa-whatsapp" style="font-size: 1.5rem;"></i> Enviar Resumo no WhatsApp
+        </a>
+        
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+            Você está sendo redirecionado automaticamente para o WhatsApp em alguns segundos...
+        </p>
+        
+        <a href="{% url 'catalog' %}" class="btn" style="background: transparent; border: 1px solid var(--border); margin-top: 2rem; display: inline-block;">
+            Voltar para o Catálogo
+        </a>
+    </div>
+
+    <!-- Redirecionamento Automático -->
+    <script>
+        setTimeout(function() {
+            window.open("{{ whatsapp_url|safe }}", "_blank");
+        }, 3000);
+    </script>
+{% endblock %}

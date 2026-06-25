@@ -1,0 +1,73 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Carteira de Clientes | Painel Adm{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Carteira de Clientes</h1>
+            <p style="color: var(--text-muted);">Relatório estatístico de fidelidade, compras realizadas e ticket de consumo por cliente.</p>
+        </div>
+    </div>
+
+    <!-- Estatísticas Gerais da Carteira -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">Pos.</th>
+                        <th>Cliente</th>
+                        <th>CPF / CNPJ</th>
+                        <th>Contato (WhatsApp)</th>
+                        <th style="text-align: center;">Total de Pedidos</th>
+                        <th>Faturamento Concluído (PIX)</th>
+                        <th>Última Compra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in portfolio %}
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: var(--warning);">
+                                {{ forloop.counter }}º
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; font-size: 1.05rem;">{{ item.client.name }}</div>
+                                {% if item.client.user %}
+                                    <span style="font-size: 0.75rem; color: var(--accent);"><i class="fa-solid fa-circle-user"></i> {{ item.client.user.username }}</span>
+                                {% else %}
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-ghost"></i> Convidado (Sem Login)</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-family: monospace;">{{ item.client.cpf_cnpj|default:"-" }}</td>
+                            <td>{{ item.client.contact }}</td>
+                            <td style="text-align: center; font-weight: bold;">
+                                <span class="badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); border: 1px solid rgba(100, 116, 139, 0.2);">
+                                    {{ item.purchases_count }} pedido(s)
+                                </span>
+                            </td>
+                            <td style="font-weight: 800; color: var(--success); font-size: 1.1rem;">
+                                R$ {{ item.total_spent }}
+                            </td>
+                            <td>
+                                {% if item.last_purchase_date %}
+                                    <div style="font-weight: 500;">{{ item.last_purchase_date|date:"d/m/Y" }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ item.last_purchase_date|date:"H:i" }}</div>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">Nenhuma compra</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                                <i class="fa-solid fa-address-book" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
+                                <h4>Nenhum cliente cadastrado no sistema</h4>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

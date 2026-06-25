@@ -1,0 +1,73 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Gerenciamento de Clientes | Painel Adm{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Cadastro de Clientes</h1>
+            <p style="color: var(--text-muted);">Veja e edite informações pessoais dos clientes registrados no sistema.</p>
+        </div>
+        <a href="{% url 'admin_client_create' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-user-plus"></i> Novo Cliente
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Cliente</th>
+                        <th>CPF / CNPJ</th>
+                        <th>Aniversário</th>
+                        <th>Contato (WhatsApp)</th>
+                        <th>Endereço de Entrega</th>
+                        <th style="width: 100px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                        <tr>
+                            <td style="font-weight: 600;">
+                                {{ client.name }}
+                                {% if client.user %}
+                                    <div style="font-size: 0.75rem; color: var(--accent); font-weight: normal;">
+                                        <i class="fa-regular fa-circle-user"></i> Logado como: {{ client.user.username }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="font-family: monospace;">{{ client.cpf_cnpj }}</td>
+                            <td>
+                                {% if client.birthday %}
+                                    {{ client.birthday|date:"d/m/Y" }}
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">Não informado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ client.contact }}</td>
+                            <td style="font-size: 0.85rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ client.address }}">
+                                {{ client.address }}
+                            </td>
+                            <td>
+                                <div class="actions-cell" style="justify-content: center;">
+                                    <a href="{% url 'admin_client_edit' client.id %}" class="btn btn-sm" style="background: var(--bg-hover); color: var(--text-main);" title="Editar Cliente">
+                                        <i class="fa-regular fa-pen-to-square"></i> Editar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                                <i class="fa-solid fa-users-slash" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
+                                <h4>Nenhum cliente cadastrado no sistema</h4>
+                                <a href="{% url 'admin_client_create' %}" class="btn btn-sm btn-primary" style="margin-top: 1rem;">Cadastrar Primeiro Cliente</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'catalogo/base.html' %}
+{% load static %}
+
+{% block title %}Carrinho de Compras{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; font-family: var(--font-title);">Seu Carrinho de Compras</h1>
+
+    {% if cart_items %}
+        <div class="cart-layout">
+            <!-- Tabela de Itens -->
+            <div class="cart-section">
+                <form method="POST" action="{% url 'cart_update' %}">
+                    {% csrf_token %}
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th>Quantidade</th>
+                                <th>Subtotal</th>
+                                <th>Remover</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td>
+                                        <div class="cart-product-info">
+                                            {% if item.product.images.exists %}
+                                                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="cart-prod-img">
+                                            {% else %}
+                                                <img src="{% static 'images/placeholder.png' %}" alt="{{ item.product.name }}" class="cart-prod-img">
+                                            {% endif %}
+                                            <div>
+                                                <h4 style="font-size: 1rem; font-weight: 600;">{{ item.product.name }}</h4>
+                                                <span style="font-size: 0.75rem; color: var(--text-muted);">Cód: {{ item.product.code }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>R$ {{ item.product.sale_price }}</td>
+                                    <td>
+                                        <input type="number" name="quantity_{{ item.product.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="quantity-input">
+                                    </td>
+                                    <td style="font-weight: 600; color: var(--accent);">R$ {{ item.subtotal }}</td>
+                                    <td>
+                                        <a href="{% url 'cart_remove' item.product.id %}" style="color: var(--danger); font-size: 1.1rem; padding: 0.5rem;" title="Remover item">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                        <a href="{% url 'catalog' %}" class="btn" style="background: transparent; border: 1px solid var(--border);">
+                            <i class="fa-solid fa-arrow-left"></i> Continuar Comprando
+                        </a>
+                        <button type="submit" class="btn" style="background: var(--bg-hover); color: var(--text-main);">
+                            <i class="fa-solid fa-arrows-rotate"></i> Atualizar Quantidades
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Resumo e Identificação -->
+            <div class="checkout-form-section">
+                <h3 style="margin-bottom: 1.5rem; font-family: var(--font-title);">Identificação e Entrega</h3>
+                
+                {% if not is_logged_in %}
+                    <div style="background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; border: 1px solid rgba(37, 99, 235, 0.2);">
+                        <i class="fa-solid fa-circle-info" style="color: var(--accent); margin-right: 0.3rem;"></i>
+                        Já tem uma conta? <a href="{% url 'login' %}?next={% url 'cart_view' %}" style="color: var(--accent); font-weight: bold; text-decoration: underline;">Faça login</a> para carregar seus dados automaticamente.
+                    </div>
+                {% endif %}
+                
+                <form method="POST" action="{% url 'checkout' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">Nome Completo *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <span style="color: var(--danger); font-size: 0.8rem;">{{ form.name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.birthday.id_for_label }}">Data de Aniversário</label>
+                        {{ form.birthday }}
+                        {% if form.birthday.errors %}
+                            <span style="color: var(--danger); font-size: 0.8rem;">{{ form.birthday.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.contact.id_for_label }}">WhatsApp / Telefone de Contato *</label>
+                        {{ form.contact }}
+                        {% if form.contact.errors %}
+                            <span style="color: var(--danger); font-size: 0.8rem;">{{ form.contact.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+                    
+                    <!-- Resumo Financeiro -->
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-muted);">
+                        <span>Subtotal:</span>
+                        <span>R$ {{ total }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 800; font-family: var(--font-title);">
+                        <span>Total Geral:</span>
+                        <span style="color: var(--accent);">R$ {{ total }}</span>
+                    </div>
+                    
+                    <!-- PIX Informativo -->
+                    <div class="pix-box">
+                        <i class="fa-brands fa-pix" style="font-size: 1.8rem; color: var(--success); margin-bottom: 0.4rem; display: block;"></i>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">PAGAMENTO VIA PIX</span>
+                        <div class="pix-key">11 971498691</div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Transfira o valor total e anexe o comprovante no WhatsApp!</span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                        <i class="fa-brands fa-whatsapp" style="margin-right: 0.4rem; font-size: 1.2rem;"></i> Finalizar e Ir para WhatsApp
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 5rem 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+            <i class="fa-solid fa-cart-flat-bed" style="font-size: 4rem; color: var(--border); margin-bottom: 1.5rem;"></i>
+            <h2>Seu carrinho está vazio</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Adicione produtos do catálogo antes de tentar finalizar o pedido.</p>
+            <a href="{% url 'catalog' %}" class="btn btn-primary" style="padding: 0.8rem 2rem;">
+                Ir para o Catálogo
+            </a>
+        </div>
+    {% endif %}
+{% endblock %}

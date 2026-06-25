@@ -1,0 +1,98 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Gerenciamento de Produtos | Painel Adm{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Cadastro de Produtos</h1>
+            <p style="color: var(--text-muted);">Gerencie todos os itens do seu catálogo: preços, estoque, imagens e disponibilidade.</p>
+        </div>
+        <a href="{% url 'admin_product_create' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-plus"></i> Novo Produto
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Produto</th>
+                        <th>Categoria</th>
+                        <th>Custo</th>
+                        <th>Venda</th>
+                        <th>Estoque</th>
+                        <th>Status Catálogo</th>
+                        <th style="width: 180px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr {% if not product.is_active %}style="opacity: 0.6;"{% endif %}>
+                            <td style="font-weight: bold; font-family: monospace;">{{ product.code }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    {% if product.images.exists %}
+                                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                    {% else %}
+                                        <div style="width: 40px; height: 40px; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                            <i class="fa-regular fa-image" style="color: var(--text-muted);"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div style="font-weight: 600;">{{ product.name }}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            {{ product.description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ product.category.name }}</td>
+                            <td style="color: var(--text-muted);">R$ {{ product.cost_price }}</td>
+                            <td style="font-weight: 600; color: var(--accent);">R$ {{ product.sale_price }}</td>
+                            <td>
+                                {% if product.stock > 0 %}
+                                    <span style="font-weight: bold;">{{ product.stock }}</span>
+                                {% else %}
+                                    <span class="badge badge-danger" style="font-size: 0.7rem;">Esgotado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.is_active %}
+                                    <span class="badge badge-success" style="font-size: 0.7rem;">Ativo</span>
+                                {% else %}
+                                    <span class="badge badge-danger" style="font-size: 0.7rem;">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="actions-cell" style="justify-content: center;">
+                                    <a href="{% url 'admin_product_edit' product.id %}" class="btn btn-sm" style="background: var(--bg-hover); color: var(--text-main);" title="Editar Produto">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    
+                                    <a href="{% url 'toggle_product_status' product.id %}" class="btn btn-sm {% if product.is_active %}btn-danger{% else %}btn-primary{% endif %}" style="padding: 0.4rem 0.6rem;" title="{% if product.is_active %}Inativar no Catálogo{% else %}Ativar no Catálogo{% endif %}">
+                                        {% if product.is_active %}
+                                            <i class="fa-solid fa-ban"></i> Inativar
+                                        {% else %}
+                                            <i class="fa-solid fa-check"></i> Ativar
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+                                <i class="fa-solid fa-box-open" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
+                                <h4>Nenhum produto cadastrado</h4>
+                                <a href="{% url 'admin_product_create' %}" class="btn btn-sm btn-primary" style="margin-top: 1rem;">Cadastrar Primeiro Produto</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

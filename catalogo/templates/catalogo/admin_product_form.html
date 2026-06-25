@@ -1,0 +1,114 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}{{ title }} | Painel Adm{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; font-family: var(--font-title);">{{ title }}</h1>
+
+    <div class="admin-card" style="max-width: 800px; margin: 0 auto;">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="{{ form.code.id_for_label }}">Código do Produto *</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.code.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Nome do Produto *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.name.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="{{ form.cost_price.id_for_label }}">Preço de Custo (R$) *</label>
+                    {{ form.cost_price }}
+                    {% if form.cost_price.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.cost_price.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.sale_price.id_for_label }}">Preço de Venda (R$) *</label>
+                    {{ form.sale_price }}
+                    {% if form.sale_price.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.sale_price.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.stock.id_for_label }}">Estoque Inicial *</label>
+                    {{ form.stock }}
+                    {% if form.stock.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.stock.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.category.id_for_label }}">Categoria *</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ form.category.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Descrição do Produto *</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Imagens do Produto (Até 6) -->
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="product_images">Imagens do Produto (Máx. 6 imagens)</label>
+                <input type="file" name="images" id="product_images" multiple accept="image/*" class="form-control">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">
+                    Selecione múltiplos arquivos segurando Ctrl (ou Command no Mac). Formatos suportados: PNG, JPG, JPEG.
+                </span>
+            </div>
+
+            <!-- Se houver imagens existentes (Edição) -->
+            {% if product and product.images.exists %}
+                <div class="form-group">
+                    <label>Imagens Cadastradas (Marque as que deseja excluir):</label>
+                    <div class="upload-grid">
+                        {% for img in product.images.all %}
+                            <div class="image-preview-card">
+                                <img src="{{ img.image.url }}" alt="Foto do Produto">
+                                <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem;">
+                                    <input type="checkbox" name="delete_images" value="{{ img.id }}" id="del_img_{{ img.id }}" class="form-check-input" style="width: 14px; height: 14px;">
+                                    <label for="del_img_{{ img.id }}" style="margin-bottom: 0; cursor: pointer; color: var(--danger);">Excluir</label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="form-check-group" style="margin-top: 1.5rem;">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}">Ativar Produto no Catálogo Público</label>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1; padding: 0.9rem;">
+                    Salvar Produto
+                </button>
+                <a href="{% url 'admin_products' %}" class="btn" style="background: transparent; border: 1px solid var(--border); padding: 0.9rem 2rem;">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

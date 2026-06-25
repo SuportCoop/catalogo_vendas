@@ -1,0 +1,64 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Cadastro de Cliente | Painel Adm{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; font-family: var(--font-title);">{{ title }}</h1>
+
+    <div class="admin-card" style="max-width: 750px; margin: 0 auto;">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Nome Completo do Cliente *</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ form.name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label for="{{ form.cpf_cnpj.id_for_label }}">CPF ou CNPJ *</label>
+                    {{ form.cpf_cnpj }}
+                    {% if form.cpf_cnpj.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.cpf_cnpj.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.birthday.id_for_label }}">Data de Aniversário</label>
+                    {{ form.birthday }}
+                    {% if form.birthday.errors %}
+                        <span style="color: var(--danger); font-size: 0.8rem;">{{ form.birthday.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.contact.id_for_label }}">WhatsApp / Telefone de Contato *</label>
+                {{ form.contact }}
+                {% if form.contact.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ form.contact.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}">Endereço de Entrega Completo *</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <span style="color: var(--danger); font-size: 0.8rem;">{{ form.address.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1; padding: 0.9rem;">
+                    Salvar Cliente
+                </button>
+                <a href="{% url 'admin_clients' %}" class="btn" style="background: transparent; border: 1px solid var(--border); padding: 0.9rem 2rem;">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

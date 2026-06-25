@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Painel de Controle | Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Ajustes específicos do Admin */
+        body.admin-theme {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body class="admin-theme">
+
+    <!-- Header / Navbar Admin -->
+    <header style="background: var(--bg-card); border-bottom: 1px solid var(--border);">
+        <div class="nav-container" style="max-width: 1600px;">
+            <a href="{% url 'admin_dashboard' %}" class="logo" style="color: var(--warning);">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>GERENCIADOR<b>CATÁLOGO</b></span>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="{% url 'admin_products' %}" class="nav-link {% if 'produtos' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-boxes-stacked"></i> Produtos
+                </a>
+                <a href="{% url 'admin_categories' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_categories' %}active{% endif %}">
+                    <i class="fa-solid fa-tags"></i> Categorias
+                </a>
+                <a href="{% url 'admin_clients' %}" class="nav-link {% if 'clientes' in request.path and 'carteira' not in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i> Clientes
+                </a>
+                <a href="{% url 'admin_client_portfolio' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_client_portfolio' %}active{% endif %}">
+                    <i class="fa-solid fa-address-book"></i> Carteira de Clientes
+                </a>
+                <a href="{% url 'admin_users' %}" class="nav-link {% if 'usuarios' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-user-gear"></i> Usuários
+                </a>
+                
+                <span style="color: var(--text-muted); margin: 0 0.5rem;">|</span>
+                
+                <a href="{% url 'catalog' %}" class="nav-link" style="color: var(--accent); font-weight: bold;">
+                    <i class="fa-solid fa-arrow-left"></i> Ver Catálogo
+                </a>
+                <a href="{% url 'logout' %}" class="nav-link" style="color: var(--danger);">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Django Messages (Alerts) -->
+    {% if messages %}
+        <div class="alert-container" style="max-width: 1600px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span>{{ message }}</span>
+                    <button class="alert-close">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Admin Content -->
+    <main class="admin-dashboard-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Admin -->
+    <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 2rem; text-align: center; margin-top: 5rem; color: var(--text-muted); font-size: 0.9rem;">
+        <p>&copy; 2026 Painel Administrativo. Acesso Restrito.</p>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

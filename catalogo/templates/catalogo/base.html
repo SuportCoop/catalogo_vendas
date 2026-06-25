@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Catálogo de Produtos{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header>
+        <div class="nav-container">
+            <a href="{% url 'catalog' %}" class="logo">
+                <i class="fa-solid fa-store"></i>
+                <span>MEU<b>CATÁLOGO</b></span>
+            </a>
+            
+            <nav class="nav-links">
+                <a href="{% url 'catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Catálogo
+                </a>
+                
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'purchase_history' %}" class="nav-link {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Meus Pedidos
+                    </a>
+                {% endif %}
+                
+                {% if request.user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="nav-link" style="color: var(--warning); font-weight: bold;">
+                        <i class="fa-solid fa-chart-line"></i> Painel Adm
+                    </a>
+                {% endif %}
+                
+                {% if request.user.is_authenticated %}
+                    <span class="nav-link" style="color: var(--text-main); font-weight: 500;">
+                        Olá, {{ request.user.username }}
+                    </span>
+                    <a href="{% url 'logout' %}" class="nav-link" style="color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                        Entrar
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary" style="padding: 0.5rem 1rem;">
+                        Cadastrar-se
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'cart_view' %}" class="cart-btn">
+                    <i class="fa-solid fa-cart-shopping"></i> Carrinho
+                    <span class="cart-count" id="cartCount">{{ cart_count|default:"0" }}</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Django Messages (Alerts) -->
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span>{{ message }}</span>
+                    <button class="alert-close">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 2rem; text-align: center; margin-top: 5rem; color: var(--text-muted); font-size: 0.9rem;">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p>&copy; 2026 Meu Catálogo. Todos os direitos reservados.</p>
+            <p>
+                <i class="fa-brands fa-whatsapp" style="color: var(--success); margin-right: 0.3rem;"></i> 
+                Suporte WhatsApp: (11) 97149-8691
+            </p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
