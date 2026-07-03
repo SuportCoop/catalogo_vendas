@@ -24,6 +24,9 @@
                 <i class="fa-solid fa-gauge-high"></i>
                 <span>GERENCIADOR<b>CATÁLOGO</b></span>
             </a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menu principal">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             
             <nav class="nav-links">
                 <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
@@ -45,7 +48,7 @@
                     <i class="fa-solid fa-user-gear"></i> Usuários
                 </a>
                 
-                <span style="color: var(--text-muted); margin: 0 0.5rem;">|</span>
+                <span class="nav-separator" style="color: var(--text-muted); margin: 0 0.5rem;">|</span>
                 
                 <a href="{% url 'catalog' %}" class="nav-link" style="color: var(--accent); font-weight: bold;">
                     <i class="fa-solid fa-arrow-left"></i> Ver Catálogo

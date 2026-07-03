@@ -138,4 +138,36 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+
+    // ==========================================
+    // MENU TOGGLE (MOBILE NAVIGATION)
+    // ==========================================
+    const menuToggle = document.getElementById("menuToggle");
+    const navLinks = document.querySelector(".nav-links");
+    
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener("click", function(e) {
+            e.stopPropagation();
+            navLinks.classList.toggle("active");
+            
+            // Alterar ícone do toggle (bars <=> xmark)
+            const icon = menuToggle.querySelector("i");
+            if (navLinks.classList.contains("active")) {
+                icon.className = "fa-solid fa-xmark";
+            } else {
+                icon.className = "fa-solid fa-bars";
+            }
+        });
+        
+        // Fechar o menu ao clicar fora dele
+        document.addEventListener("click", function(e) {
+            if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+                navLinks.classList.remove("active");
+                const icon = menuToggle.querySelector("i");
+                if (icon) {
+                    icon.className = "fa-solid fa-bars";
+                }
+            }
+        });
+    }
 });

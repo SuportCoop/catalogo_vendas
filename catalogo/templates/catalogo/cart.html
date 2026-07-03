@@ -12,7 +12,8 @@
             <div class="cart-section">
                 <form method="POST" action="{% url 'cart_update' %}">
                     {% csrf_token %}
-                    <table class="cart-table">
+                    <div class="table-responsive">
+                        <table class="cart-table">
                         <thead>
                             <tr>
                                 <th>Produto</th>
@@ -52,6 +53,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
                         <a href="{% url 'catalog' %}" class="btn" style="background: transparent; border: 1px solid var(--border);">

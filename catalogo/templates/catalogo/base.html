@@ -17,6 +17,9 @@
                 <i class="fa-solid fa-store"></i>
                 <span>MEU<b>CATÁLOGO</b></span>
             </a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Menu principal">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             
             <nav class="nav-links">
                 <a href="{% url 'catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">

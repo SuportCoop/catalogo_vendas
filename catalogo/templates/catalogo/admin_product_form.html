@@ -9,7 +9,7 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-grid form-grid-2">
                 <div class="form-group">
                     <label for="{{ form.code.id_for_label }}">Código do Produto *</label>
                     {{ form.code }}
@@ -27,7 +27,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-grid form-grid-3">
                 <div class="form-group">
                     <label for="{{ form.cost_price.id_for_label }}">Preço de Custo (R$) *</label>
                     {{ form.cost_price }}
@@ -101,7 +101,7 @@
                 <label for="{{ form.is_active.id_for_label }}">Ativar Produto no Catálogo Público</label>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary" style="flex-grow: 1; padding: 0.9rem;">
                     Salvar Produto
                 </button>
