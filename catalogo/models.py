@@ -70,6 +70,7 @@ class Purchase(models.Model):
     total_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Valor Total")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pendente", verbose_name="Status")
     payment_method = models.CharField(max_length=50, default="PIX", verbose_name="Método de Pagamento")
+    payment_link = models.URLField(max_length=500, blank=True, default="", verbose_name="Link de Pagamento")
 
     class Meta:
         verbose_name = "Compra"

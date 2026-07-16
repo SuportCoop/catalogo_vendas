@@ -9,6 +9,25 @@
         <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.5rem;">Pedido Recebido!</h1>
         <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">Seu pedido <b>#{{ purchase.id }}</b> foi registrado no nosso sistema com o status <b>Pendente</b>.</p>
         
+        {% if checkout_url %}
+        <!-- Checkout InfinitePay (Pix / Cartão) -->
+        <div style="background: var(--accent-glow); border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 2rem; margin-bottom: 2rem; text-align: center;">
+            <h3 style="font-family: var(--font-title); font-size: 1.4rem; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <i class="fa-solid fa-credit-card"></i> Pague com InfinitePay (Pix ou Cartão)
+            </h3>
+            <p style="font-size: 1rem; margin-bottom: 1.5rem; color: var(--text-main);">Aceitamos **Pix** e **Cartão de Crédito em até 12x** de forma rápida e segura.</p>
+            
+            <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-title); color: var(--text-main); margin-bottom: 1.5rem;">
+                R$ {{ purchase.total_value }}
+            </div>
+            
+            <a href="{{ checkout_url }}" class="btn btn-primary" style="padding: 1.1rem 2rem; font-size: 1.2rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--accent-glow);">
+                <i class="fa-solid fa-wallet"></i> Pagar Agora
+            </a>
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">Você será redirecionado para a InfinitePay para concluir o pagamento de forma segura.</span>
+        </div>
+        {% else %}
+        <!-- PIX Manual (Fallback) -->
         <div style="background: rgba(16, 185, 129, 0.06); border: 1px dashed var(--success); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; text-align: left;">
             <h3 style="font-family: var(--font-title); font-size: 1.2rem; color: var(--success); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-brands fa-pix"></i> Instruções de Pagamento (PIX)
@@ -23,13 +42,28 @@
             </div>
             <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: block;">Após fazer a transferência, clique no botão abaixo para nos enviar o resumo do pedido e o comprovante pelo WhatsApp. O status do seu pedido será atualizado em seu histórico após confirmarmos o pagamento.</span>
         </div>
+        {% endif %}
 
-        <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-primary" style="padding: 1.1rem 2rem; font-size: 1.15rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.6rem;">
-            <i class="fa-brands fa-whatsapp" style="font-size: 1.5rem;"></i> Enviar Resumo no WhatsApp
-        </a>
+        <!-- Integração de WhatsApp como Ação Secundária ou Confirmação -->
+        <div style="margin-top: 1.5rem; background: var(--bg-hover); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 1rem; font-weight: 500; text-align: left;">
+                {% if checkout_url %}
+                    Deseja enviar seu pedido também por WhatsApp ou tirar dúvidas?
+                {% else %}
+                    Clique no botão abaixo para enviar o comprovante de pagamento no WhatsApp:
+                {% endif %}
+            </p>
+            <a href="{{ whatsapp_url }}" target="_blank" class="btn" style="background: var(--success); color: white; padding: 0.9rem 2rem; font-size: 1.05rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.6rem;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 1.3rem;"></i> Enviar Pedido no WhatsApp
+            </a>
+        </div>
         
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
-            Você está sendo redirecionado automaticamente para o WhatsApp em alguns segundos...
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+            {% if checkout_url %}
+                Você está sendo redirecionado automaticamente para a tela de pagamento em alguns segundos...
+            {% else %}
+                Você está sendo redirecionado automaticamente para o WhatsApp em alguns segundos...
+            {% endif %}
         </p>
         
         <a href="{% url 'catalog' %}" class="btn" style="background: transparent; border: 1px solid var(--border); margin-top: 2rem; display: inline-block;">
@@ -40,7 +74,11 @@
     <!-- Redirecionamento Automático -->
     <script>
         setTimeout(function() {
-            window.open("{{ whatsapp_url|safe }}", "_blank");
+            {% if checkout_url %}
+                window.location.href = "{{ checkout_url|safe }}";
+            {% else %}
+                window.open("{{ whatsapp_url|safe }}", "_blank");
+            {% endif %}
         }, 3000);
     </script>
 {% endblock %}

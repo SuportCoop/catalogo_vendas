@@ -1,4 +1,8 @@
 import urllib.parse
+import urllib.request
+import json
+import logging
+from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
@@ -228,6 +232,44 @@ def checkout(request):
     request.session['cart'] = {}
     request.session.modified = True
     
+    # Gerar link de pagamento InfinitePay
+    logger = logging.getLogger(__name__)
+    items_payload = []
+    for item in purchase.items.all():
+        items_payload.append({
+            "quantity": item.quantity,
+            "price": int(item.price * 100),  # em centavos
+            "description": item.product.name
+        })
+
+    payload = {
+        "handle": "caio-c_farias",
+        "items": items_payload,
+        "order_nsu": str(purchase.id),
+        "redirect_url": request.build_absolute_uri(reverse('purchase_history'))
+    }
+
+    checkout_url = None
+    try:
+        req = urllib.request.Request(
+            "https://api.checkout.infinitepay.io/links",
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            },
+            method='POST'
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            checkout_url = res_data.get("url")
+            if checkout_url:
+                purchase.payment_link = checkout_url
+                purchase.save()
+    except Exception as e:
+        logger.error(f"Erro ao gerar link de pagamento no InfinitePay: {e}")
+        checkout_url = None
+
     # Gerar link do WhatsApp
     whatsapp_number = "5511971498691"
     msg = f"Olá! Gostaria de finalizar minha compra.\n\n"
@@ -242,8 +284,13 @@ def checkout(request):
     for item in purchase.items.all():
         msg += f"- {item.quantity}x {item.product.name} (Cód: {item.product.code}) - R$ {item.price:.2f} un.\n"
     msg += f"\n*Valor Total:* R$ {purchase.total_value:.2f}\n\n"
-    msg += f"*Pagamento via PIX* chave celular: 11 971498691\n"
-    msg += f"Por favor, confirme meu pedido. Estou enviando o comprovante da PIX em seguida."
+    
+    if purchase.payment_link:
+        msg += f"*Link de Pagamento (Cartão/Pix):* {purchase.payment_link}\n\n"
+    else:
+        msg += f"*Pagamento via PIX* chave celular: 11 971498691\n"
+        
+    msg += f"Por favor, confirme meu pedido. Estou enviando o comprovante em seguida."
     
     encoded_msg = urllib.parse.quote(msg)
     whatsapp_url = f"https://api.whatsapp.com/send?phone={whatsapp_number}&text={encoded_msg}"
@@ -251,7 +298,8 @@ def checkout(request):
     return render(request, 'catalogo/checkout_success.html', {
         'purchase': purchase,
         'whatsapp_url': whatsapp_url,
-        'pix_key': "11 971498691"
+        'pix_key': "11 971498691",
+        'checkout_url': checkout_url
     })
 
 

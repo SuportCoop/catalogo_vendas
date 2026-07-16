@@ -35,8 +35,13 @@
                                 <td style="font-weight: 700; color: var(--accent);">R$ {{ purchase.total_value }}</td>
                                 <td>
                                     {% if purchase.status == 'Pendente' %}
-                                        <span class="badge badge-pending">Pendente</span>
-                                    {% elif purchase.status == 'Finalizada' %}
+                                         <span class="badge badge-pending">Pendente</span>
+                                         {% if purchase.payment_link %}
+                                             <a href="{{ purchase.payment_link }}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 0.5rem; display: block; font-size: 0.75rem; text-align: center;">
+                                                 <i class="fa-solid fa-credit-card"></i> Pagar Agora
+                                             </a>
+                                         {% endif %}
+                                     {% elif purchase.status == 'Finalizada' %}
                                         <span class="badge badge-success">Finalizada</span>
                                     {% else %}
                                         <span class="badge badge-danger">Cancelada</span>
