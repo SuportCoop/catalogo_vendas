@@ -395,6 +395,14 @@ def admin_dashboard(request):
     total_qty_sold = PurchaseItem.objects.filter(purchase__in=sales_month_query).aggregate(total=Sum('quantity'))['total'] or 0
     top_client = sales_month_query.values('client__name').annotate(total_spent=Sum('total_value')).order_by('-total_spent').first()
 
+    # 4. Lucro do mês corrente (Faturamento - Custo dos itens vendidos)
+    total_cost_items = PurchaseItem.objects.filter(
+        purchase__in=sales_month_query
+    ).aggregate(
+        total_cost=Sum(F('quantity') * F('product__cost_price'))
+    )['total_cost'] or Decimal('0.00')
+    total_profit_month = total_sold_period - total_cost_items
+
     # Últimos 5 pedidos recentes no sistema
     recent_purchases = Purchase.objects.all().order_by('-date')[:5]
 
@@ -407,6 +415,7 @@ def admin_dashboard(request):
         'total_qty_sold': total_qty_sold,
         'top_client': top_client,
         'recent_purchases': recent_purchases,
+        'total_profit_month': total_profit_month,
     }
     return render(request, 'catalogo/admin_dashboard.html', context)
 

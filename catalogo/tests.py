@@ -158,6 +158,7 @@ class CatalogSystemTestCase(TestCase):
         self.assertEqual(response.context['total_qty_sold'], 3)
         self.assertEqual(response.context['top_client']['client__name'], "João da Silva")
         self.assertEqual(response.context['top_client']['total_spent'], Decimal("5250.00"))
+        self.assertEqual(response.context['total_profit_month'], Decimal("2150.00"))
         
         # Testar filtros na página de listagem de Vendas (/dashboard/vendas/)
         # 1. Filtro ativo por ano e mês

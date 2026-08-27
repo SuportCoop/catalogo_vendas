@@ -276,3 +276,47 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django,venv
+
+### Ambientes Virtuais ###
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+bin/
+include/
+lib/
+lib64/
+pyvenv.cfg
+
+### Variáveis de Ambiente & Segredos ###
+.env
+.env.*
+!.env.example
+local_settings.py
+
+### Banco de Dados & Mídia ###
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+media/
+staticfiles/
+
+### Python / Django Cache ###
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+*.pot
+.cache/
+
+### IDEs ###
+.vscode/
+.idea/
+
+### Testes & Cobertura ###
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/

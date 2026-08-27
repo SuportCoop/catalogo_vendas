@@ -110,6 +110,14 @@
                 {% endif %}
             </span>
         </div>
+
+        <!-- Lucro Estimado no Mês -->
+        <div class="metric-card" style="position: relative;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--accent); border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md);"></div>
+            <span class="metric-label" style="color: var(--accent); font-weight: 600;">Lucro no Mês</span>
+            <div class="metric-value" style="color: var(--accent);">R$ {{ total_profit_month }}</div>
+            <span class="metric-sub">Faturamento menos custo</span>
+        </div>
     </div>
 
     <!-- Últimos Pedidos Recentes -->
