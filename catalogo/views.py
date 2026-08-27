@@ -11,9 +11,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse, HttpResponseForbidden
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
 from django.utils import timezone
 from datetime import date
+from decimal import Decimal
 
 from django.utils.text import slugify
 
@@ -375,38 +376,105 @@ def client_logout(request):
 def admin_dashboard(request):
     # Data de hoje
     today_date = timezone.localdate()
-    
-    # Compras apenas com status Finalizada para as métricas financeiras
-    finalized_purchases = Purchase.objects.filter(status='Finalizada')
-    
-    # 1. Total de produtos vendidos
-    total_qty_sold = PurchaseItem.objects.filter(purchase__status='Finalizada').aggregate(total=Sum('quantity'))['total'] or 0
-    
-    # 2. Produto mais vendido
-    top_selling = PurchaseItem.objects.filter(purchase__status='Finalizada').values('product__name', 'product__code').annotate(total_sold=Sum('quantity')).order_by('-total_sold').first()
-    
-    # 3. Valor de vendas no dia
-    sales_today = finalized_purchases.filter(date__date=today_date).aggregate(total=Sum('total_value'))['total'] or 0
-    
-    # 4. Valor de vendas no mês
-    sales_month = finalized_purchases.filter(date__year=today_date.year, date__month=today_date.month).aggregate(total=Sum('total_value'))['total'] or 0
-    
-    # 5. Melhor cliente
-    top_client = finalized_purchases.values('client__name').annotate(total_spent=Sum('total_value')).order_by('-total_spent').first()
-    
-    # Lista de todas as compras recentes (para mudar status)
-    purchases = Purchase.objects.all().order_by('-date')
-    
+
+    # Métricas Globais/Período
+    # 1. Quanto tenho pra receber do ano corrente (todas as compras não pagas e não canceladas do ano atual)
+    to_receive_purchases = Purchase.objects.filter(is_paid=False).exclude(status='Cancelada').filter(date__year=today_date.year)
+    total_to_receive = to_receive_purchases.aggregate(total=Sum('total_value'))['total'] or Decimal('0.00')
+    to_receive_list = to_receive_purchases.order_by('due_date', '-date')
+
+    # 2. Quanto foi vendido no mês corrente (exclui canceladas)
+    sales_month_query = Purchase.objects.exclude(status='Cancelada').filter(date__year=today_date.year, date__month=today_date.month)
+    total_sold_period = sales_month_query.aggregate(total=Sum('total_value'))['total'] or Decimal('0.00')
+
+    # 3. Quanto foi recebido no mês corrente (compras pagas, exclui canceladas)
+    received_month_query = Purchase.objects.filter(is_paid=True).exclude(status='Cancelada').filter(date__year=today_date.year, date__month=today_date.month)
+    total_received_period = received_month_query.aggregate(total=Sum('total_value'))['total'] or Decimal('0.00')
+
+    # Outras métricas auxiliares para o mês corrente
+    total_qty_sold = PurchaseItem.objects.filter(purchase__in=sales_month_query).aggregate(total=Sum('quantity'))['total'] or 0
+    top_client = sales_month_query.values('client__name').annotate(total_spent=Sum('total_value')).order_by('-total_spent').first()
+
+    # Últimos 5 pedidos recentes no sistema
+    recent_purchases = Purchase.objects.all().order_by('-date')[:5]
+
     context = {
-        'total_qty_sold': total_qty_sold,
-        'top_selling': top_selling,
-        'sales_today': sales_today,
-        'sales_month': sales_month,
-        'top_client': top_client,
-        'purchases': purchases,
         'today': today_date,
+        'total_to_receive': total_to_receive,
+        'to_receive_list': to_receive_list,
+        'total_sold_period': total_sold_period,
+        'total_received_period': total_received_period,
+        'total_qty_sold': total_qty_sold,
+        'top_client': top_client,
+        'recent_purchases': recent_purchases,
     }
     return render(request, 'catalogo/admin_dashboard.html', context)
+
+
+@staff_member_required
+def admin_purchases_list(request):
+    today_date = timezone.localdate()
+    
+    # Obter parâmetros de filtro
+    year_param = request.GET.get('year')
+    month_param = request.GET.get('month')
+    day_param = request.GET.get('day')
+    product_param = request.GET.get('product')
+    is_filtered = request.GET.get('filter_active') == '1'
+    
+    # Padrão: ano e mês atuais (se não for filtrado)
+    if not is_filtered:
+        filter_year = today_date.year
+        filter_month = today_date.month
+        filter_day = None
+        filter_product = None
+    else:
+        filter_year = int(year_param) if year_param else None
+        filter_month = int(month_param) if month_param else None
+        filter_day = int(day_param) if day_param else None
+        filter_product = int(product_param) if product_param else None
+
+    # Filtrar compras para a listagem principal
+    purchases_query = Purchase.objects.all()
+    if filter_year:
+        purchases_query = purchases_query.filter(date__year=filter_year)
+    if filter_month:
+        purchases_query = purchases_query.filter(date__month=filter_month)
+    if filter_day:
+        purchases_query = purchases_query.filter(date__day=filter_day)
+    if filter_product:
+        purchases_query = purchases_query.filter(items__product_id=filter_product).distinct()
+        
+    purchases = purchases_query.order_by('-date')
+
+    # Anos disponíveis para o seletor do filtro
+    years_dates = list(Purchase.objects.dates('date', 'year'))
+    available_years = [y.year for y in years_dates]
+    if today_date.year not in available_years:
+        available_years.append(today_date.year)
+    available_years = sorted(list(set(available_years)), reverse=True)
+
+    months_list = [
+        (1, 'Janeiro'), (2, 'Fevereiro'), (3, 'Março'), (4, 'Abril'),
+        (5, 'Maio'), (6, 'Junho'), (7, 'Julho'), (8, 'Agosto'),
+        (9, 'Setembro'), (10, 'Outubro'), (11, 'Novembro'), (12, 'Dezembro')
+    ]
+    
+    all_products = Product.objects.all().order_by('name')
+
+    context = {
+        'purchases': purchases,
+        'today': today_date,
+        'filter_year': filter_year,
+        'filter_month': filter_month,
+        'filter_day': filter_day,
+        'filter_product': filter_product,
+        'available_years': available_years,
+        'months_list': months_list,
+        'is_filtered': is_filtered,
+        'all_products': all_products,
+    }
+    return render(request, 'catalogo/admin_purchases_list.html', context)
 
 
 @staff_member_required
@@ -433,9 +501,16 @@ def update_purchase_status(request, purchase_id):
                     item.product.save()
                     
             purchase.status = new_status
+            if new_status == 'Finalizada':
+                purchase.is_paid = True
+            elif new_status == 'Cancelada' or new_status == 'Pendente':
+                purchase.is_paid = False
             purchase.save()
             messages.success(request, f"Status da compra #{purchase.id} atualizado para {new_status}.")
-    return redirect('admin_dashboard')
+    next_url = request.GET.get('next', 'admin_dashboard')
+    if next_url not in ['admin_dashboard', 'admin_purchases_list']:
+        next_url = 'admin_dashboard'
+    return redirect(next_url)
 
 
 @staff_member_required
@@ -629,5 +704,181 @@ def admin_client_portfolio(request):
     
     return render(request, 'catalogo/admin_client_portfolio.html', {
         'portfolio': portfolio
+    })
+
+
+@staff_member_required
+def admin_purchase_create(request):
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id')
+        discount_val = Decimal(request.POST.get('discount') or '0.00')
+        payment_method = request.POST.get('payment_method', 'PIX')
+        is_paid = request.POST.get('is_paid') == 'on'
+        due_date_str = request.POST.get('due_date')
+        
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = date.fromisoformat(due_date_str)
+            except ValueError:
+                pass
+                
+        client = get_object_or_404(Client, id=client_id)
+        
+        # Read items
+        product_ids = request.POST.getlist('product')
+        quantities = request.POST.getlist('quantity')
+        prices = request.POST.getlist('price')
+        
+        # We need to compute total value
+        total_value = Decimal('0.00')
+        items_to_create = []
+        
+        for p_id, qty_str, price_str in zip(product_ids, quantities, prices):
+            try:
+                qty = int(qty_str)
+                price = Decimal(price_str)
+                if qty > 0:
+                    product = Product.objects.get(id=p_id)
+                    total_value += price * qty
+                    items_to_create.append((product, qty, price))
+            except (Product.DoesNotExist, ValueError, TypeError):
+                pass
+                
+        # Apply discount
+        total_value = max(Decimal('0.00'), total_value - discount_val)
+        
+        if not items_to_create:
+            messages.error(request, "Adicione pelo menos um produto com quantidade maior que zero.")
+            clients = Client.objects.all().order_by('name')
+            products = Product.objects.filter(is_active=True).order_by('name')
+            return render(request, 'catalogo/admin_purchase_form.html', {
+                'clients': clients,
+                'products': products,
+            })
+            
+        # Create Purchase
+        purchase = Purchase.objects.create(
+            client=client,
+            total_value=total_value,
+            discount=discount_val,
+            due_date=due_date,
+            is_paid=is_paid,
+            status='Finalizada' if is_paid else 'Pendente',
+            payment_method=payment_method
+        )
+        
+        # Create PurchaseItems and update stock
+        for product, qty, price in items_to_create:
+            PurchaseItem.objects.create(
+                purchase=purchase,
+                product=product,
+                quantity=qty,
+                price=price
+            )
+            product.stock = max(0, product.stock - qty)
+            product.save()
+            
+        messages.success(request, f"Venda manual #{purchase.id} registrada com sucesso.")
+        return redirect('admin_dashboard')
+        
+    # GET method
+    clients = Client.objects.all().order_by('name')
+    products = Product.objects.filter(is_active=True).order_by('name')
+    return render(request, 'catalogo/admin_purchase_form.html', {
+        'clients': clients,
+        'products': products,
+    })
+
+
+@staff_member_required
+def admin_purchase_edit(request, purchase_id):
+    purchase = get_object_or_404(Purchase, id=purchase_id)
+    
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id')
+        discount_val = Decimal(request.POST.get('discount') or '0.00')
+        payment_method = request.POST.get('payment_method', 'PIX')
+        is_paid = request.POST.get('is_paid') == 'on'
+        due_date_str = request.POST.get('due_date')
+        
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = date.fromisoformat(due_date_str)
+            except ValueError:
+                pass
+                
+        client = get_object_or_404(Client, id=client_id)
+        
+        # Read items
+        product_ids = request.POST.getlist('product')
+        quantities = request.POST.getlist('quantity')
+        prices = request.POST.getlist('price')
+        
+        # We need to compute total value and validate items
+        items_to_create = []
+        for p_id, qty_str, price_str in zip(product_ids, quantities, prices):
+            try:
+                qty = int(qty_str)
+                price = Decimal(price_str)
+                if qty > 0:
+                    product = Product.objects.get(id=p_id)
+                    items_to_create.append((product, qty, price))
+            except (Product.DoesNotExist, ValueError, TypeError):
+                pass
+                
+        if not items_to_create:
+            messages.error(request, "Adicione pelo menos um produto com quantidade maior que zero.")
+            clients = Client.objects.all().order_by('name')
+            products = Product.objects.filter(is_active=True).order_by('name')
+            return render(request, 'catalogo/admin_purchase_edit.html', {
+                'purchase': purchase,
+                'clients': clients,
+                'products': products,
+            })
+            
+        # Restore stock for the old items first
+        for item in purchase.items.all():
+            item.product.stock += item.quantity
+            item.product.save()
+            
+        # Delete old items
+        purchase.items.all().delete()
+        
+        # Create new items and deduct stock
+        total_value = Decimal('0.00')
+        for product, qty, price in items_to_create:
+            product.refresh_from_db()
+            PurchaseItem.objects.create(
+                purchase=purchase,
+                product=product,
+                quantity=qty,
+                price=price
+            )
+            product.stock = max(0, product.stock - qty)
+            product.save()
+            total_value += price * qty
+            
+        # Update Purchase fields
+        purchase.client = client
+        purchase.discount = discount_val
+        purchase.due_date = due_date
+        purchase.is_paid = is_paid
+        purchase.status = 'Finalizada' if is_paid else 'Pendente'
+        purchase.payment_method = payment_method
+        purchase.total_value = max(Decimal('0.00'), total_value - discount_val)
+        purchase.save()
+        
+        messages.success(request, f"Venda #{purchase.id} atualizada com sucesso.")
+        return redirect('admin_purchases_list')
+        
+    # GET method
+    clients = Client.objects.all().order_by('name')
+    products = Product.objects.filter(is_active=True).order_by('name')
+    return render(request, 'catalogo/admin_purchase_edit.html', {
+        'purchase': purchase,
+        'clients': clients,
+        'products': products,
     })
 

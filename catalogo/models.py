@@ -71,6 +71,9 @@ class Purchase(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pendente", verbose_name="Status")
     payment_method = models.CharField(max_length=50, default="PIX", verbose_name="Método de Pagamento")
     payment_link = models.URLField(max_length=500, blank=True, default="", verbose_name="Link de Pagamento")
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Desconto")
+    due_date = models.DateField(null=True, blank=True, verbose_name="Data para Pagar")
+    is_paid = models.BooleanField(default=False, verbose_name="Pago")
 
     class Meta:
         verbose_name = "Compra"

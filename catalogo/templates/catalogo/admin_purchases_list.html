@@ -1,0 +1,174 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Vendas Registradas | Painel Adm{% endblock %}
+
+{% block content %}
+    <div class="admin-card-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Gerenciamento de Vendas</h1>
+            <p style="color: var(--text-muted);">Visualize, filtre e edite todos os pedidos e vendas cadastrados no catálogo.</p>
+        </div>
+        <div>
+            <a href="{% url 'admin_purchase_create' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem;">
+                <i class="fa-solid fa-cart-plus"></i> Registrar Venda Manual
+            </a>
+        </div>
+    </div>
+
+    <!-- Barra de Filtros -->
+    <div class="admin-card" style="margin-bottom: 2rem; padding: 1.25rem;">
+        <form method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <input type="hidden" name="filter_active" value="1">
+            
+            <div class="form-group" style="margin-bottom: 0; min-width: 120px; flex: 1;">
+                <label for="filter_year" style="font-size: 0.8rem; margin-bottom: 0.3rem; font-weight: 600; color: var(--text-muted);">Ano</label>
+                <select name="year" id="filter_year" class="form-select" style="padding: 0.5rem;">
+                    <option value="">Todos</option>
+                    {% for y in available_years %}
+                        <option value="{{ y }}" {% if filter_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; min-width: 150px; flex: 1;">
+                <label for="filter_month" style="font-size: 0.8rem; margin-bottom: 0.3rem; font-weight: 600; color: var(--text-muted);">Mês</label>
+                <select name="month" id="filter_month" class="form-select" style="padding: 0.5rem;">
+                    <option value="">Todos</option>
+                    {% for val, name in months_list %}
+                        <option value="{{ val }}" {% if filter_month == val %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; min-width: 100px; flex: 1;">
+                <label for="filter_day" style="font-size: 0.8rem; margin-bottom: 0.3rem; font-weight: 600; color: var(--text-muted);">Dia (1 a 31)</label>
+                <input type="number" name="day" id="filter_day" class="form-control" min="1" max="31" placeholder="Todos" value="{{ filter_day|default:'' }}" style="padding: 0.45rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0; min-width: 200px; flex: 2;">
+                <label for="filter_product" style="font-size: 0.8rem; margin-bottom: 0.3rem; font-weight: 600; color: var(--text-muted);">Produto</label>
+                <select name="product" id="filter_product" class="form-select" style="padding: 0.5rem;">
+                    <option value="">Todos os produtos</option>
+                    {% for p in all_products %}
+                        <option value="{{ p.id }}" {% if filter_product == p.id %}selected{% endif %}>{{ p.name }} ({{ p.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1.5rem;">
+                    <i class="fa-solid fa-filter"></i> Filtrar
+                </button>
+                {% if is_filtered %}
+                    <a href="{% url 'admin_purchases_list' %}" class="btn" style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); padding: 0.55rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-arrow-rotate-left" style="margin-right: 0.3rem;"></i> Limpar
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabela Principal de Vendas -->
+    <div class="admin-card">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nº Compra</th>
+                        <th>Cliente</th>
+                        <th>Data / Hora</th>
+                        <th>Produtos Adquiridos</th>
+                        <th>Valores</th>
+                        <th>Status / Pagamento</th>
+                        <th style="width: 280px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                        <tr>
+                            <td style="font-weight: bold;">#{{ purchase.id }}</td>
+                            <td>
+                                <div><b>{{ purchase.client.name }}</b></div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ purchase.client.contact }}</div>
+                            </td>
+                            <td>{{ purchase.date|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    {% for item in purchase.items.all %}
+                                        <li style="font-size: 0.85rem; color: var(--text-muted);">
+                                            {{ item.quantity }}x {{ item.product.name }} <span style="font-size: 0.75rem;">(R$ {{ item.price }})</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                <div style="font-weight: bold; color: var(--success);">R$ {{ purchase.total_value }}</div>
+                                {% if purchase.discount > 0 %}
+                                    <div style="font-size: 0.75rem; color: var(--danger);">Desc: -R$ {{ purchase.discount }}</div>
+                                {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ purchase.payment_method }}</div>
+                            </td>
+                            <td>
+                                <div style="margin-bottom: 0.25rem;">
+                                    {% if purchase.status == 'Pendente' %}
+                                        <span class="badge badge-pending">Pendente</span>
+                                    {% elif purchase.status == 'Finalizada' %}
+                                        <span class="badge badge-success">Finalizada</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Cancelada</span>
+                                    {% endif %}
+                                </div>
+                                <div style="margin-bottom: 0.25rem;">
+                                    {% if purchase.is_paid %}
+                                        <span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;"><i class="fa-solid fa-check"></i> Pago</span>
+                                    {% else %}
+                                        <span class="badge badge-danger" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;"><i class="fa-solid fa-clock"></i> Não Pago</span>
+                                    {% endif %}
+                                </div>
+                                {% if purchase.due_date %}
+                                    <div style="font-size: 0.75rem; color: var(--warning);">
+                                        <i class="fa-regular fa-calendar"></i> Vencimento: <b>{{ purchase.due_date|date:"d/m/Y" }}</b>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center;">
+                                    <!-- Ação de Atualização Rápida de Status -->
+                                    {% if purchase.status == 'Finalizada' and not request.user.is_superuser %}
+                                        <select class="form-select" disabled style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; opacity: 0.6; cursor: not-allowed;">
+                                            <option selected>Finalizada</option>
+                                        </select>
+                                    {% else %}
+                                        <form method="POST" action="{% url 'update_purchase_status' purchase.id %}?next=admin_purchases_list" style="display: inline-flex; gap: 0.25rem;">
+                                            {% csrf_token %}
+                                            <select name="status" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto;">
+                                                <option value="Pendente" {% if purchase.status == 'Pendente' %}selected{% endif %}>Pendente</option>
+                                                <option value="Finalizada" {% if purchase.status == 'Finalizada' %}selected{% endif %}>Finalizada</option>
+                                                <option value="Cancelada" {% if purchase.status == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary" title="Atualizar Status" style="padding: 0.35rem 0.6rem;">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    <!-- Link de Edição Completa -->
+                                    <a href="{% url 'admin_purchase_edit' purchase.id %}" class="btn btn-sm" style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); text-decoration: none; padding: 0.35rem 0.8rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;" title="Editar produtos e quantidades">
+                                        <i class="fa-solid fa-pen-to-square"></i> Editar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                                <i class="fa-solid fa-receipt" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
+                                <h4>Nenhuma venda encontrada para o período selecionado</h4>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

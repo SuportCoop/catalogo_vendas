@@ -8,55 +8,92 @@
             <h1 style="font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 0.2rem;">Painel Administrativo</h1>
             <p style="color: var(--text-muted);">Métricas financeiras em tempo real e controle de pedidos.</p>
         </div>
-        <div style="font-size: 0.9rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-            <i class="fa-regular fa-calendar" style="color: var(--warning); margin-right: 0.3rem;"></i> Data: <b>{{ today|date:"d/m/Y" }}</b>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'admin_purchase_create' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem;">
+                <i class="fa-solid fa-cart-plus"></i> Registrar Venda Manual
+            </a>
+            <div style="font-size: 0.9rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <i class="fa-regular fa-calendar" style="color: var(--warning); margin-right: 0.3rem;"></i> Data: <b>{{ today|date:"d/m/Y" }}</b>
+            </div>
         </div>
+    </div>
+    <!-- Seção de Acesso Rápido -->
+    <h3 style="font-family: var(--font-title); font-size: 1.4rem; margin-bottom: 1rem;">Acesso Rápido</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2.5rem;">
+        <a href="{% url 'admin_purchase_create' %}" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--bg-hover)';" onmouseout="this.style.transform='none'; this.style.background='var(--bg-card)';">
+            <div style="background: rgba(245, 158, 11, 0.1); color: var(--warning); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px;">
+                <i class="fa-solid fa-cart-plus"></i>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin: 0 0 0.2rem 0; font-family: var(--font-title);">Registrar Venda</h4>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Nova venda manual</p>
+            </div>
+        </a>
+        <a href="{% url 'admin_purchases_list' %}" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--bg-hover)';" onmouseout="this.style.transform='none'; this.style.background='var(--bg-card)';">
+            <div style="background: rgba(37, 99, 235, 0.1); color: var(--accent); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px;">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin: 0 0 0.2rem 0; font-family: var(--font-title);">Ver Vendas</h4>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Filtros e relatórios</p>
+            </div>
+        </a>
+        <a href="{% url 'admin_product_create' %}" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--bg-hover)';" onmouseout="this.style.transform='none'; this.style.background='var(--bg-card)';">
+            <div style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px;">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin: 0 0 0.2rem 0; font-family: var(--font-title);">Novo Produto</h4>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Adicionar no catálogo</p>
+            </div>
+        </a>
+        <a href="{% url 'admin_client_portfolio' %}" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--bg-hover)';" onmouseout="this.style.transform='none'; this.style.background='var(--bg-card)';">
+            <div style="background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px;">
+                <i class="fa-solid fa-address-book"></i>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin: 0 0 0.2rem 0; font-family: var(--font-title);">Melhores Clientes</h4>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Carteira de compras</p>
+            </div>
+        </a>
     </div>
 
     <!-- Seção de Métricas Financeiras -->
-    <div class="metrics-grid">
-        <!-- Vendas no Dia -->
-        <div class="metric-card success">
-            <span class="metric-label">Vendas no Dia</span>
-            <div class="metric-value">R$ {{ sales_today|default:"0,00" }}</div>
-            <span class="metric-sub">Compras com status finalizado hoje</span>
+    <h3 style="font-family: var(--font-title); font-size: 1.4rem; margin-bottom: 1rem;">Métricas Financeiras</h3>
+    <div class="metrics-grid" style="margin-bottom: 2.5rem;">
+        <!-- A Receber (Global Anual) -->
+        <div class="metric-card danger" id="openReceivablesBtn" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(239, 68, 68, 0.15)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+            <span class="metric-label" style="display: flex; align-items: center; justify-content: space-between;">
+                <span>A Receber Geral (Ano)</span>
+                <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; opacity: 0.7;"></i>
+            </span>
+            <div class="metric-value" style="color: var(--danger);">R$ {{ total_to_receive }}</div>
+            <span class="metric-sub"><i class="fa-solid fa-magnifying-glass"></i> Clique para ver pessoas</span>
         </div>
         
-        <!-- Vendas no Mês -->
+        <!-- Vendido no Mês -->
+        <div class="metric-card">
+            <span class="metric-label">Vendido no Mês</span>
+            <div class="metric-value">R$ {{ total_sold_period }}</div>
+            <span class="metric-sub">Faturamento acumulado</span>
+        </div>
+
+        <!-- Recebido no Mês -->
         <div class="metric-card success">
-            <span class="metric-label">Vendas no Mês</span>
-            <div class="metric-value">R$ {{ sales_month|default:"0,00" }}</div>
-            <span class="metric-sub">Acumulado do mês corrente</span>
+            <span class="metric-label">Recebido no Mês</span>
+            <div class="metric-value" style="color: var(--success);">R$ {{ total_received_period }}</div>
+            <span class="metric-sub">Total pago no mês</span>
         </div>
 
         <!-- Produtos Vendidos -->
         <div class="metric-card">
             <span class="metric-label">Produtos Vendidos</span>
             <div class="metric-value">{{ total_qty_sold|default:"0" }} un.</div>
-            <span class="metric-sub">Volume total de vendas concretizadas</span>
-        </div>
-
-        <!-- Maior Produto Vendido -->
-        <div class="metric-card warning">
-            <span class="metric-label">Maior Produto Vendido</span>
-            <div class="metric-value" style="font-size: 1.3rem; margin-top: 0.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {% if top_selling %}
-                    {{ top_selling.product__name }}
-                {% else %}
-                    Nenhum
-                {% endif %}
-            </div>
-            <span class="metric-sub">
-                {% if top_selling %}
-                    {{ top_selling.total_sold }} unidades vendidas
-                {% else %}
-                    Sem vendas ainda
-                {% endif %}
-            </span>
+            <span class="metric-sub">Volume do mês</span>
         </div>
 
         <!-- Melhor Cliente -->
-        <div class="metric-card danger">
+        <div class="metric-card warning">
             <span class="metric-label">Melhor Cliente</span>
             <div class="metric-value" style="font-size: 1.3rem; margin-top: 0.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {% if top_client %}
@@ -67,19 +104,24 @@
             </div>
             <span class="metric-sub">
                 {% if top_client %}
-                    Total comprado: R$ {{ top_client.total_spent }}
+                    Comprou: R$ {{ top_client.total_spent }}
                 {% else %}
-                    Sem compras ainda
+                    Sem compras no mês
                 {% endif %}
             </span>
         </div>
     </div>
 
-    <!-- Seção de Gerenciamento de Pedidos -->
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <h3 style="font-family: var(--font-title); font-size: 1.4rem;">Gerenciamento de Vendas / Pedidos</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Confirme ou cancele pedidos para atualizar o histórico de compras do cliente e os relatórios financeiros.</p>
+    <!-- Últimos Pedidos Recentes -->
+    <div class="admin-card" style="margin-bottom: 2.5rem;">
+        <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="font-family: var(--font-title); font-size: 1.4rem;">Vendas Recentes</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.2rem 0 0 0;">As 5 compras mais recentes feitas na aplicação.</p>
+            </div>
+            <a href="{% url 'admin_purchases_list' %}" class="btn" style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); text-decoration: none; padding: 0.6rem 1.2rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                Ver Todas as Vendas <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </div>
 
         <div class="table-responsive">
@@ -90,13 +132,13 @@
                         <th>Cliente</th>
                         <th>Data / Hora</th>
                         <th>Produtos Adquiridos</th>
-                        <th>Total Geral</th>
-                        <th>Status Atual</th>
-                        <th style="width: 250px;">Ações / Liberar Compra</th>
+                        <th>Valores</th>
+                        <th>Status / Pagamento</th>
+                        <th style="width: 150px; text-align: center;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for purchase in purchases %}
+                    {% for purchase in recent_purchases %}
                         <tr>
                             <td style="font-weight: bold;">#{{ purchase.id }}</td>
                             <td>
@@ -113,46 +155,42 @@
                                     {% endfor %}
                                 </ul>
                             </td>
-                            <td style="font-weight: bold; color: var(--success);">R$ {{ purchase.total_value }}</td>
                             <td>
-                                {% if purchase.status == 'Pendente' %}
-                                    <span class="badge badge-pending">Pendente</span>
-                                {% elif purchase.status == 'Finalizada' %}
-                                    <span class="badge badge-success">Finalizada</span>
-                                {% else %}
-                                    <span class="badge badge-danger">Cancelada</span>
+                                <div style="font-weight: bold; color: var(--success);">R$ {{ purchase.total_value }}</div>
+                                {% if purchase.discount > 0 %}
+                                    <div style="font-size: 0.75rem; color: var(--danger);">Desc: -R$ {{ purchase.discount }}</div>
                                 {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ purchase.payment_method }}</div>
                             </td>
                             <td>
-                                {% if purchase.status == 'Finalizada' and not request.user.is_superuser %}
-                                    <div style="display: flex; gap: 0.4rem; align-items: center;">
-                                        <select name="status" class="form-select" disabled style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto; opacity: 0.6; cursor: not-allowed;">
-                                            <option value="Finalizada" selected>Finalizada</option>
-                                        </select>
-                                        <span class="btn btn-sm" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: not-allowed;" title="Bloqueado - Apenas Administrador Geral pode reverter">
-                                            <i class="fa-solid fa-lock"></i>
-                                        </span>
-                                    </div>
-                                {% else %}
-                                    <form method="POST" action="{% url 'update_purchase_status' purchase.id %}" style="display: flex; gap: 0.4rem;">
-                                        {% csrf_token %}
-                                        <select name="status" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto;">
-                                            <option value="Pendente" {% if purchase.status == 'Pendente' %}selected{% endif %}>Pendente</option>
-                                            <option value="Finalizada" {% if purchase.status == 'Finalizada' %}selected{% endif %}>Finalizada</option>
-                                            <option value="Cancelada" {% if purchase.status == 'Cancelada' %}selected{% endif %}>Cancelada</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-primary" title="Atualizar Status">
-                                            <i class="fa-solid fa-check"></i>
-                                        </button>
-                                    </form>
-                                {% endif %}
+                                <div style="margin-bottom: 0.25rem;">
+                                    {% if purchase.status == 'Pendente' %}
+                                        <span class="badge badge-pending">Pendente</span>
+                                    {% elif purchase.status == 'Finalizada' %}
+                                        <span class="badge badge-success">Finalizada</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Cancelada</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if purchase.is_paid %}
+                                        <span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;"><i class="fa-solid fa-check"></i> Pago</span>
+                                    {% else %}
+                                        <span class="badge badge-danger" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;"><i class="fa-solid fa-clock"></i> Não Pago</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="{% url 'admin_purchase_edit' purchase.id %}" class="btn btn-sm" style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); text-decoration: none; padding: 0.35rem 0.8rem; font-size: 0.8rem;" title="Editar pedido e quantidades">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </a>
                             </td>
                         </tr>
                     {% empty %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
                                 <i class="fa-solid fa-receipt" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--border);"></i>
-                                <h4>Nenhuma compra registrada no sistema</h4>
+                                <h4>Nenhuma venda registrada no sistema</h4>
                             </td>
                         </tr>
                     {% endfor %}
@@ -160,4 +198,104 @@
             </table>
         </div>
     </div>
+
+    <!-- Modal de Contas a Receber -->
+    <div class="modal-overlay" id="receivablesModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;">
+        <div class="admin-card" style="width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; position: relative; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <button id="closeReceivablesBtn" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--text-muted); font-size: 1.75rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            
+            <h2 style="font-family: var(--font-title); font-size: 1.8rem; color: var(--danger); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                <i class="fa-solid fa-hourglass-half"></i> Contas a Receber (Pessoas Inadimplentes do Ano)
+            </h2>
+            
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nº Compra</th>
+                            <th>Cliente</th>
+                            <th>Forma Pgto</th>
+                            <th>Data Vencimento</th>
+                            <th>Valor Devido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in to_receive_list %}
+                            <tr>
+                                <td style="font-weight: bold;">#{{ p.id }}</td>
+                                <td>
+                                    <div><b>{{ p.client.name }}</b></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ p.client.contact }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--warning); margin-top: 0.2rem;">
+                                        {% for item in p.items.all %}
+                                            {{ item.quantity }}x {{ item.product.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>{{ p.payment_method }}</td>
+                                <td>
+                                    {% if p.due_date %}
+                                        <span style="color: var(--warning); font-weight: 600;">{{ p.due_date|date:"d/m/Y" }}</span>
+                                    {% else %}
+                                        <span style="color: var(--text-muted); font-style: italic;">Não definida</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-weight: bold; color: var(--danger);">R$ {{ p.total_value }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                                    <i class="fa-regular fa-circle-check" style="font-size: 2.5rem; color: var(--success); margin-bottom: 1rem; display: block;"></i>
+                                    Parabéns! Nenhuma conta pendente a receber do ano.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn" id="closeReceivablesFooterBtn" style="background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border); padding: 0.6rem 1.5rem;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de controle do Modal -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const modal = document.getElementById("receivablesModal");
+            const openBtn = document.getElementById("openReceivablesBtn");
+            const closeBtn = document.getElementById("closeReceivablesBtn");
+            const closeFooterBtn = document.getElementById("closeReceivablesFooterBtn");
+            
+            function openModal() {
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden"; // trava rolagem da pagina
+            }
+            
+            function closeModal() {
+                modal.style.display = "none";
+                document.body.style.overflow = ""; // restaura rolagem
+            }
+            
+            if (openBtn) {
+                openBtn.addEventListener("click", openModal);
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener("click", closeModal);
+            }
+            
+            if (closeFooterBtn) {
+                closeFooterBtn.addEventListener("click", closeModal);
+            }
+            
+            // fechar ao clicar fora do modal
+            window.addEventListener("click", function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
 {% endblock %}

@@ -19,6 +19,9 @@ urlpatterns = [
     
     # Dashboard Admin & Financeiro
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/vendas/nova/', views.admin_purchase_create, name='admin_purchase_create'),
+    path('dashboard/vendas/', views.admin_purchases_list, name='admin_purchases_list'),
+    path('dashboard/vendas/<int:purchase_id>/editar/', views.admin_purchase_edit, name='admin_purchase_edit'),
     path('dashboard/vendas/<int:purchase_id>/status/', views.update_purchase_status, name='update_purchase_status'),
     path('dashboard/produtos/', views.admin_products, name='admin_products'),
     path('dashboard/produtos/novo/', views.admin_product_create, name='admin_product_create'),

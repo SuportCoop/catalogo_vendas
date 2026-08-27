@@ -32,6 +32,9 @@
                 <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
+                <a href="{% url 'admin_purchases_list' %}" class="nav-link {% if 'vendas' in request.path and 'nova' not in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-receipt"></i> Vendas
+                </a>
                 <a href="{% url 'admin_products' %}" class="nav-link {% if 'produtos' in request.path %}active{% endif %}">
                     <i class="fa-solid fa-boxes-stacked"></i> Produtos
                 </a>

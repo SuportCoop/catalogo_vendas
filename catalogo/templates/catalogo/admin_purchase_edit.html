@@ -1,0 +1,260 @@
+{% extends 'catalogo/admin_base.html' %}
+
+{% block title %}Editar Venda #{{ purchase.id }} | Painel Adm{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 2rem; font-family: var(--font-title);">Editar Venda #{{ purchase.id }}</h1>
+
+    <div class="admin-card">
+        <form method="POST" id="manualSaleForm">
+            {% csrf_token %}
+            
+            <h3 style="font-family: var(--font-title); font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--warning); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                <i class="fa-regular fa-user" style="margin-right: 0.3rem;"></i> 1. Identificação da Compradora
+            </h3>
+            
+            <div class="form-group" style="max-width: 500px;">
+                <label for="client_id">Selecione a Cliente *</label>
+                <select name="client_id" id="client_id" class="form-select" required>
+                    {% for client in clients %}
+                        <option value="{{ client.id }}" {% if purchase.client.id == client.id %}selected{% endif %}>{{ client.name }} ({{ client.contact }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <h3 style="font-family: var(--font-title); font-size: 1.25rem; margin-top: 2.5rem; margin-bottom: 1.5rem; color: var(--warning); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-boxes-stacked" style="margin-right: 0.3rem;"></i> 2. Itens Adquiridos
+            </h3>
+            
+            <div class="table-responsive" style="margin-bottom: 1rem;">
+                <table class="admin-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th>Produto *</th>
+                            <th style="width: 120px;">Quantidade *</th>
+                            <th style="width: 160px;">Preço Unitário (R$) *</th>
+                            <th style="width: 160px;">Subtotal (R$)</th>
+                            <th style="width: 80px; text-align: center;">Remover</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsContainer">
+                        {% for item in purchase.items.all %}
+                            <tr class="item-row">
+                                <td>
+                                    <select name="product" class="form-select product-select" required>
+                                        {% for p in products %}
+                                            <option value="{{ p.id }}" data-price="{{ p.sale_price }}" {% if item.product.id == p.id %}selected{% endif %}>{{ p.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="quantity" class="form-control quantity-input" min="1" value="{{ item.quantity }}" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="price" class="form-control price-input" step="0.01" min="0" value="{{ item.price }}" required>
+                                </td>
+                                <td style="font-weight: 600; vertical-align: middle;" class="row-subtotal">
+                                    R$ 0,00
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <button type="button" class="btn btn-sm btn-icon remove-row-btn" style="color: var(--danger); background: none; border: none; font-size: 1.1rem;" title="Remover item">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <!-- Fallback se não tiver itens -->
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="button" class="btn" id="addItemBtn" style="background: var(--bg-hover); color: var(--text-main); margin-bottom: 2rem;">
+                <i class="fa-solid fa-plus" style="margin-right: 0.3rem;"></i> Adicionar Produto
+            </button>
+
+            <h3 style="font-family: var(--font-title); font-size: 1.25rem; margin-top: 1rem; margin-bottom: 1.5rem; color: var(--warning); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                <i class="fa-solid fa-hand-holding-dollar" style="margin-right: 0.3rem;"></i> 3. Valores e Pagamento
+            </h3>
+
+            <div class="form-grid form-grid-3">
+                <div class="form-group">
+                    <label for="discount">Desconto Aplicado (R$)</label>
+                    <input type="number" name="discount" id="discount" class="form-control" step="0.01" min="0" value="{{ purchase.discount }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="payment_method">Forma de Pagamento</label>
+                    <select name="payment_method" id="payment_method" class="form-select">
+                        <option value="PIX" {% if purchase.payment_method == 'PIX' %}selected{% endif %}>PIX</option>
+                        <option value="Cartão de Crédito" {% if purchase.payment_method == 'Cartão de Crédito' %}selected{% endif %}>Cartão de Crédito</option>
+                        <option value="Cartão de Débito" {% if purchase.payment_method == 'Cartão de Débito' %}selected{% endif %}>Cartão de Débito</option>
+                        <option value="Dinheiro" {% if purchase.payment_method == 'Dinheiro' %}selected{% endif %}>Dinheiro</option>
+                        <option value="Boleto" {% if purchase.payment_method == 'Boleto' %}selected{% endif %}>Boleto</option>
+                        <option value="Outro" {% if purchase.payment_method == 'Outro' %}selected{% endif %}>Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="due_date">Quando vai pagar?</label>
+                    <input type="date" name="due_date" id="due_date" class="form-control" value="{{ purchase.due_date|date:'Y-m-d' }}">
+                </div>
+            </div>
+
+            <div class="form-check-group" style="margin-top: 1.5rem; margin-bottom: 2rem;">
+                <input type="checkbox" name="is_paid" id="is_paid" class="form-check-input" {% if purchase.is_paid %}checked{% endif %}>
+                <label for="is_paid" style="font-weight: 600; cursor: pointer;">A venda já está paga?</label>
+            </div>
+
+            <!-- Card de resumo financeiro -->
+            <div style="background: var(--bg-hover); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; max-width: 400px; margin-left: auto; margin-bottom: 2.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-muted);">
+                    <span>Soma dos Produtos:</span>
+                    <span id="summarySubtotal">R$ 0,00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.95rem; color: var(--danger);">
+                    <span>Desconto:</span>
+                    <span id="summaryDiscount">- R$ 0,00</span>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; font-family: var(--font-title);">
+                    <span>Valor Final:</span>
+                    <span id="summaryTotal" style="color: var(--success);">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1; padding: 0.9rem;">
+                    Salvar Alterações
+                </button>
+                <a href="{% url 'admin_purchases_list' %}" class="btn" style="background: transparent; border: 1px solid var(--border); padding: 0.9rem 2rem;">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Dados dos Produtos como JSON seguro -->
+    <script id="products-data" type="application/json">
+        [
+            {% for p in products %}
+                {"id": {{ p.id }}, "name": "{{ p.name|escapejs }}", "price": "{{ p.sale_price }}"}
+                {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const products = JSON.parse(document.getElementById('products-data').textContent);
+            const itemsContainer = document.getElementById('itemsContainer');
+            const addItemBtn = document.getElementById('addItemBtn');
+            const discountInput = document.getElementById('discount');
+            const summarySubtotal = document.getElementById('summarySubtotal');
+            const summaryDiscount = document.getElementById('summaryDiscount');
+            const summaryTotal = document.getElementById('summaryTotal');
+            
+            // Inicializar subtotais para as linhas existentes
+            const rows = itemsContainer.querySelectorAll('.item-row');
+            rows.forEach(row => {
+                bindRowEvents(row);
+                updateRowSubtotal(row);
+            });
+            
+            // Se o carrinho estiver vazio, adiciona uma linha
+            if (rows.length === 0) {
+                addItemRow();
+            }
+
+            addItemBtn.addEventListener('click', addItemRow);
+            discountInput.addEventListener('input', recalculateTotal);
+
+            function addItemRow() {
+                const tr = document.createElement('tr');
+                tr.className = 'item-row';
+                
+                tr.innerHTML = `
+                    <td>
+                        <select name="product" class="form-select product-select" required>
+                            <option value="">-- Escolha o produto --</option>
+                            ${products.map(p => `<option value="${p.id}" data-price="${p.price}">${p.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="quantity" class="form-control quantity-input" min="1" value="1" required>
+                    </td>
+                    <td>
+                        <input type="number" name="price" class="form-control price-input" step="0.01" min="0" value="0.00" required>
+                    </td>
+                    <td style="font-weight: 600; vertical-align: middle;" class="row-subtotal">
+                        R$ 0,00
+                    </td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <button type="button" class="btn btn-sm btn-icon remove-row-btn" style="color: var(--danger); background: none; border: none; font-size: 1.1rem;" title="Remover item">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+
+                itemsContainer.appendChild(tr);
+                bindRowEvents(tr);
+                recalculateTotal();
+            }
+
+            function bindRowEvents(row) {
+                const productSelect = row.querySelector('.product-select');
+                const quantityInput = row.querySelector('.quantity-input');
+                const priceInput = row.querySelector('.price-input');
+                const removeBtn = row.querySelector('.remove-row-btn');
+
+                productSelect.addEventListener('change', function() {
+                    const selectedOption = productSelect.options[productSelect.selectedIndex];
+                    const defaultPrice = selectedOption.getAttribute('data-price');
+                    if (defaultPrice) {
+                        priceInput.value = parseFloat(defaultPrice).toFixed(2);
+                    } else {
+                        priceInput.value = "0.00";
+                    }
+                    updateRowSubtotal(row);
+                });
+
+                quantityInput.addEventListener('input', () => updateRowSubtotal(row));
+                priceInput.addEventListener('input', () => updateRowSubtotal(row));
+
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                    if (itemsContainer.querySelectorAll('.item-row').length === 0) {
+                        addItemRow();
+                    }
+                    recalculateTotal();
+                });
+            }
+
+            function updateRowSubtotal(row) {
+                const qty = parseInt(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                const subtotal = qty * price;
+                row.querySelector('.row-subtotal').textContent = `R$ ${subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                recalculateTotal();
+            }
+
+            function recalculateTotal() {
+                let sum = 0;
+                const rows = itemsContainer.querySelectorAll('.item-row');
+                
+                rows.forEach(row => {
+                    const qty = parseInt(row.querySelector('.quantity-input').value) || 0;
+                    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                    sum += qty * price;
+                });
+
+                const discount = parseFloat(discountInput.value) || 0;
+                const finalTotal = Math.max(0, sum - discount);
+
+                summarySubtotal.textContent = `R$ ${sum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                summaryDiscount.textContent = `- R$ ${discount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                summaryTotal.textContent = `R$ ${finalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+        });
+    </script>
+{% endblock %}

@@ -135,14 +135,14 @@ class CatalogSystemTestCase(TestCase):
         self.assertEqual(session.get('cart', {}), {})
 
     def test_admin_dashboard_metrics(self):
-        """Verifica as queries de KPIs financeiros no Dashboard do Administrador."""
+        """Verifica as queries de KPIs financeiros no Dashboard e filtros na listagem de Vendas."""
         # Criar compras de teste
-        # Compra 1: Finalizada (Entra nas métricas financeiras)
-        p1 = Purchase.objects.create(client=self.client_profile, total_value=Decimal("5000.00"), status="Finalizada")
+        # Compra 1: Finalizada e Paga (Entra nas métricas financeiras de recebido e faturamento)
+        p1 = Purchase.objects.create(client=self.client_profile, total_value=Decimal("5000.00"), status="Finalizada", is_paid=True)
         PurchaseItem.objects.create(purchase=p1, product=self.product1, quantity=2, price=Decimal("2500.00"))
         
-        # Compra 2: Pendente (Não entra no faturamento finalizado)
-        p2 = Purchase.objects.create(client=self.client_profile, total_value=Decimal("250.00"), status="Pendente")
+        # Compra 2: Pendente e Não Paga (Entra em contas a receber e faturamento do período)
+        p2 = Purchase.objects.create(client=self.client_profile, total_value=Decimal("250.00"), status="Pendente", is_paid=False)
         PurchaseItem.objects.create(purchase=p2, product=self.product2, quantity=1, price=Decimal("250.00"))
         
         # Fazer login como admin
@@ -152,12 +152,24 @@ class CatalogSystemTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         
         # Verificar se os dados no contexto do dashboard batem
-        self.assertEqual(response.context['sales_today'], Decimal("5000.00"))
-        self.assertEqual(response.context['sales_month'], Decimal("5000.00"))
-        self.assertEqual(response.context['total_qty_sold'], 2)
-        self.assertEqual(response.context['top_selling']['product__name'], "Smartphone X")
+        self.assertEqual(response.context['total_to_receive'], Decimal("250.00"))
+        self.assertEqual(response.context['total_sold_period'], Decimal("5250.00"))
+        self.assertEqual(response.context['total_received_period'], Decimal("5000.00"))
+        self.assertEqual(response.context['total_qty_sold'], 3)
         self.assertEqual(response.context['top_client']['client__name'], "João da Silva")
-        self.assertEqual(response.context['top_client']['total_spent'], Decimal("5000.00"))
+        self.assertEqual(response.context['top_client']['total_spent'], Decimal("5250.00"))
+        
+        # Testar filtros na página de listagem de Vendas (/dashboard/vendas/)
+        # 1. Filtro ativo por ano e mês
+        response_filtered = self.http_client.get('/dashboard/vendas/?filter_active=1&year=2026&month=8')
+        self.assertEqual(response_filtered.status_code, 200)
+        self.assertEqual(len(response_filtered.context['purchases']), 2)
+        
+        # 2. Filtro ativo por produto (self.product2)
+        response_prod = self.http_client.get(f'/dashboard/vendas/?filter_active=1&product={self.product2.id}')
+        self.assertEqual(response_prod.status_code, 200)
+        self.assertEqual(len(response_prod.context['purchases']), 1)
+        self.assertEqual(response_prod.context['purchases'][0].id, p2.id)
 
     def test_permission_restrictions(self):
         """Valida que clientes comuns não conseguem entrar no Dashboard Administrativo."""
@@ -209,4 +221,91 @@ class CatalogSystemTestCase(TestCase):
         response = self.http_client.get('/dashboard/carteira/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "João da Silva")
+
+    def test_admin_purchase_create(self):
+        """Testa o registro manual de vendas pelo administrador."""
+        # Fazer login como admin
+        self.http_client.login(username="admin", password="admin123")
+        
+        # Testar acesso GET
+        response = self.http_client.get('/dashboard/vendas/nova/')
+        self.assertEqual(response.status_code, 200)
+        
+        # Testar envio POST
+        post_data = {
+            'client_id': self.client_profile.id,
+            'discount': '50.00',
+            'payment_method': 'Cartão de Crédito',
+            'is_paid': 'on',
+            'due_date': '2026-09-10',
+            'product': [self.product1.id, self.product2.id],
+            'quantity': ['2', '3'],
+            'price': [str(self.product1.sale_price), str(self.product2.sale_price)]
+        }
+        
+        response = self.http_client.post('/dashboard/vendas/nova/', post_data)
+        self.assertRedirects(response, '/dashboard/')
+        
+        # Verificar se a compra foi criada no banco com os valores corretos
+        self.assertEqual(Purchase.objects.count(), 1)
+        purchase = Purchase.objects.first()
+        self.assertEqual(purchase.client, self.client_profile)
+        self.assertEqual(purchase.discount, Decimal("50.00"))
+        self.assertEqual(purchase.is_paid, True)
+        self.assertEqual(purchase.status, "Finalizada")
+        self.assertEqual(purchase.due_date, date(2026, 9, 10))
+        self.assertEqual(purchase.payment_method, "Cartão de Crédito")
+        
+        # Valor total: (2 * 2500.00) + (3 * 250.00) - 50.00 = 5000.00 + 750.00 - 50.00 = 5700.00
+        self.assertEqual(purchase.total_value, Decimal("5700.00"))
+        
+        # Verificar se os PurchaseItem foram criados
+        self.assertEqual(purchase.items.count(), 2)
+        
+        # Verificar se estoque foi abatido
+        self.product1.refresh_from_db()
+        self.product2.refresh_from_db()
+        self.assertEqual(self.product1.stock, 8) # 10 - 2
+        self.assertEqual(self.product2.stock, 2) # 5 - 3
+
+    def test_admin_purchase_edit_stock_recalculation(self):
+        """Testa a edição de vendas pelo administrador e o recálculo do estoque."""
+        # Fazer login como admin
+        self.http_client.login(username="admin", password="admin123")
+        
+        # Criar compra inicial: compra com 2 unidades de product1 (estoque inicial: 10)
+        self.product1.stock = 8
+        self.product1.save()
+        
+        purchase = Purchase.objects.create(client=self.client_profile, total_value=Decimal("5000.00"), status="Pendente", is_paid=False)
+        PurchaseItem.objects.create(purchase=purchase, product=self.product1, quantity=2, price=Decimal("2500.00"))
+        
+        # Testar acesso GET
+        response = self.http_client.get(f'/dashboard/vendas/{purchase.id}/editar/')
+        self.assertEqual(response.status_code, 200)
+        
+        # Caso 1: Aumentar a quantidade de product1 de 2 para 4 (deve reduzir mais 2 do estoque: 8 -> 6)
+        post_data = {
+            'client_id': self.client_profile.id,
+            'discount': '0.00',
+            'payment_method': 'PIX',
+            'is_paid': 'on', # marcar como pago
+            'due_date': '',
+            'product': [self.product1.id],
+            'quantity': ['4'],
+            'price': ['2500.00']
+        }
+        
+        response = self.http_client.post(f'/dashboard/vendas/{purchase.id}/editar/', post_data)
+        self.assertRedirects(response, '/dashboard/vendas/')
+        
+        # Verificar banco de dados
+        purchase.refresh_from_db()
+        self.assertEqual(purchase.total_value, Decimal("10000.00"))
+        self.assertEqual(purchase.is_paid, True)
+        self.assertEqual(purchase.status, "Finalizada")
+        
+        # Verificar estoque
+        self.product1.refresh_from_db()
+        self.assertEqual(self.product1.stock, 6) # Estoque final deve ser 10 - 4 = 6!
 
