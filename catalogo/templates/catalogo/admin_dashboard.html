@@ -67,21 +67,21 @@
                 <span>A Receber Geral (Ano)</span>
                 <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; opacity: 0.7;"></i>
             </span>
-            <div class="metric-value" style="color: var(--danger);">R$ {{ total_to_receive }}</div>
+            <div class="metric-value" style="color: var(--danger);">R$ {{ total_to_receive|floatformat:2 }}</div>
             <span class="metric-sub"><i class="fa-solid fa-magnifying-glass"></i> Clique para ver pessoas</span>
         </div>
         
         <!-- Vendido no Mês -->
         <div class="metric-card">
             <span class="metric-label">Vendido no Mês</span>
-            <div class="metric-value">R$ {{ total_sold_period }}</div>
+            <div class="metric-value">R$ {{ total_sold_period|floatformat:2 }}</div>
             <span class="metric-sub">Faturamento acumulado</span>
         </div>
 
         <!-- Recebido no Mês -->
         <div class="metric-card success">
             <span class="metric-label">Recebido no Mês</span>
-            <div class="metric-value" style="color: var(--success);">R$ {{ total_received_period }}</div>
+            <div class="metric-value" style="color: var(--success);">R$ {{ total_received_period|floatformat:2 }}</div>
             <span class="metric-sub">Total pago no mês</span>
         </div>
 
@@ -104,7 +104,7 @@
             </div>
             <span class="metric-sub">
                 {% if top_client %}
-                    Comprou: R$ {{ top_client.total_spent }}
+                    Comprou: R$ {{ top_client.total_spent|floatformat:2 }}
                 {% else %}
                     Sem compras no mês
                 {% endif %}
@@ -115,7 +115,7 @@
         <div class="metric-card" style="position: relative;">
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--accent); border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md);"></div>
             <span class="metric-label" style="color: var(--accent); font-weight: 600;">Lucro no Mês</span>
-            <div class="metric-value" style="color: var(--accent);">R$ {{ total_profit_month }}</div>
+            <div class="metric-value" style="color: var(--accent);">R$ {{ total_profit_month|floatformat:2 }}</div>
             <span class="metric-sub">Faturamento menos custo</span>
         </div>
     </div>
